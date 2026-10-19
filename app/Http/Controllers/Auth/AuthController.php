@@ -45,8 +45,10 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $request->session()->regenerate();
-
+        // Only regenerate session if session exists (website)
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
         $user = Auth::user();
         $token = $user->createToken('auth-token')->plainTextToken;
 
