@@ -45,6 +45,8 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $request->session()->regenerate();
+
         $user = Auth::user();
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -58,8 +60,23 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        if ($request->user() && $request->user()->currentAccessToken()) {
-            $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+
+        // Only delete if it's a real personal access token
+        if ($user) {
+            $token = $user->currentAccessToken();
+
+            if ($token && !($token instanceof \Laravel\Sanctum\TransientToken)) {
+                $token->delete();
+            }
+        }
+
+        // End cookie/session auth
+        Auth::guard('web')->logout();
+
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
         }
 
         return response()->json([
