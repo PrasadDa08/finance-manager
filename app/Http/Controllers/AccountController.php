@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use Illuminate\Http\Request;
 
+
+
 class AccountController extends Controller
 {
     /**
@@ -13,7 +15,7 @@ class AccountController extends Controller
     public function index()
     {
         // $user = auth('sanctum')->user();
-        $accounts = auth('sanctum')->user()->accounts;
+        $accounts = auth('sanctum')->user()->accounts()->orderBy('id', 'desc')->get();
 
         return response()->json([
             "success" => true,
@@ -27,6 +29,7 @@ class AccountController extends Controller
      */
     public function store(Request $request)
     {
+
         $request->validate([
             'name' => 'required|string|max:100',
             'type' => 'required|in:bank,cash,credit_card,wallet',
@@ -41,10 +44,12 @@ class AccountController extends Controller
             'user_id' => $user->id,
             'name' => $request->name,
             'type' => $request->type,
-            'opening_balance' => $request->opening_balance || 0,
-            'currency' => $request->currency || 'INR',
-            'is_active' => $request->is_active || true
+            'opening_balance' => $request->opening_balance ?? 0,
+            'currency' => $request->currency ?? 'INR',
+            'is_active' => $request->is_active ?? true
         ]);
+
+
 
         return response()->json([
             "success" => true,
