@@ -14,7 +14,7 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        $transactions = auth('sanctum')->user()->transactions()->with('account:id,name', 'category:id,name,type')->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->get();
+        $transactions = auth('sanctum')->user()->transactions()->with('account:id,name', 'category:id,name,type,color')->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->get();
 
         return response()->json([
             'success' => true,
