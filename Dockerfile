@@ -1,9 +1,10 @@
 FROM php:8.3-cli
 
 # system deps
+
 RUN apt-get update && apt-get install -y \
-    git unzip libpq-dev libzip-dev \
-    && docker-php-ext-install pdo pdo_pgsql zip \
+    git unzip libpq-dev libzip-dev libpng-dev libonig-dev \
+    && docker-php-ext-install pdo pdo_pgsql zip bcmath \
     && rm -rf /var/lib/apt/lists/*
 
 # composer
