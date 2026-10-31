@@ -23,4 +23,4 @@ RUN chmod -R 777 storage bootstrap/cache
 
 EXPOSE 8000
 
-CMD php artisan config:clear && php artisan migrate --force && php artisan serve --host 0.0.0.0 --port ${PORT:-8000}
+CMD php artisan config:clear && php -r "require 'vendor/autoload.php'; \$app = require 'bootstrap/app.php'; \$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo 'SESSION SAME SITE: '.config('session.same_site').PHP_EOL; echo 'SESSION SECURE: '.var_export(config('session.secure'), true).PHP_EOL;" && php artisan migrate --force && php artisan serve --host 0.0.0.0 --port ${PORT:-8000}
