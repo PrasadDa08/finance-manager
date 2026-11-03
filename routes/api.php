@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
@@ -23,4 +24,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource("/transactions", TransactionController::class);
     Route::get("/dashboard", [DashboardController::class, 'index']);
     Route::post('/feedback', [FeedbackController::class, 'store']);
+    Route::apiResource("/budgets", BudgetController::class);
 });
