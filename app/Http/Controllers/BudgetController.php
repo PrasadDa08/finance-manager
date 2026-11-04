@@ -115,7 +115,20 @@ class BudgetController extends Controller
      */
     public function show(Budget $budget)
     {
-        // 
+        $user = auth('sanctum')->user();
+
+        if ($budget->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => "You don't have permission to view this budget"
+            ], 403);
+        }
+
+        return response()->json([
+            "success" => true,
+            "message" => "Budget fetched successfully",
+            "data" => $budget->load('category:id,name,type,color'),
+        ]);
     }
 
     /**
