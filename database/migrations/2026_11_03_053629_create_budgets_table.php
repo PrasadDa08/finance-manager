@@ -14,12 +14,11 @@ return new class extends Migration
         Schema::create('budgets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('category_id')->constrained()->cascadeOnDelete();
+            $table->string('type');
+            $table->foreignId('account_id')->nullable()->constrained()->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
             $table->date('month_start');
             $table->timestamps();
-
-            $table->unique(['user_id', 'category_id', 'month_start']);
         });
     }
 

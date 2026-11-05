@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable('user_id', 'category_id', 'amount', 'month_start')]
+#[Fillable('user_id', 'type', 'account_id', 'amount', 'month_start')]
 
 class Budget extends Model
 {
@@ -19,8 +19,8 @@ class Budget extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function category()
+    public function account()
     {
-        return $this->belongsTo(category::class);
+        return $this->belongsTo(Account::class);
     }
 }
