@@ -28,4 +28,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource("/budgets", BudgetController::class);
 
     Route::get("/dailyspend", [DailySpendController::class, 'index']);
+    Route::get("/daily-summary", [DailySpendController::class, 'summary']);
 });

@@ -89,4 +89,22 @@ class DailySpendController extends Controller
             ],
         ]);
     }
+
+
+    public function summary(Request $request)
+    {
+        $date = $request->query('date');
+
+        $dateFormated = Carbon::createFromFormat("Y-m-d", $date);
+
+        $user = auth('sanctum')->user();
+
+        $transactions = $user->transactions()->where('type', 'expense')->where('transaction_date', $dateFormated)->orderBy('id', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Transaction summery fetched successfully",
+            'data' => $transactions->load('category:id,name,type', 'account:id,name,type'),
+        ]);
+    }
 }
