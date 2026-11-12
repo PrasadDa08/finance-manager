@@ -28,4 +28,9 @@ class Account extends Model
     {
         return $this->hasMany(Budget::class);
     }
+
+    public function recurringTemplates()
+    {
+        return $this->hasMany(RecurringTemplate::class);
+    }
 }

@@ -55,4 +55,12 @@ class User extends Authenticatable
     public function budgets(){
         return $this->hasMany(Budget::class);
     }
+
+    public function recurringTemplates(){
+        return $this->hasMany(RecurringTemplate::class);
+    }
+
+    public function runs(){
+        return $this->hasMany(RecurringRun::class);
+    }
 }

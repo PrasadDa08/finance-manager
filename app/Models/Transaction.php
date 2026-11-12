@@ -25,4 +25,8 @@ class Transaction extends Model
     public function category(){
         return $this->belongsTo(Category::class);
     }
+
+    public function run(){
+        return $this->hasOne(RecurringRun::class);
+    }
 }

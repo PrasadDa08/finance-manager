@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DailySpendController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\RecurringController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,4 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get("/dailyspend", [DailySpendController::class, 'index']);
     Route::get("/daily-summary", [DailySpendController::class, 'summary']);
+    Route::apiResource("/recurring", RecurringController::class);
+    Route::get("/recurring-due", [RecurringController::class, 'due']);
+    Route::post("/recurring/{recurring}/confirm", [RecurringController::class, 'confirm']);
+    Route::post("/recurring/{recurring}/skip", [RecurringController::class, 'skip']);
 });
