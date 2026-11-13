@@ -31,28 +31,26 @@ class RecurringController extends Controller
         $user = auth('sanctum')->user();
 
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
             'account_id' => 'required|exists:accounts,id',
             'category_id' => 'required|exists:categories,id',
-            'type' => 'required|string|min:1',
-            'amount' => 'required|decimal:12,2',
+            'type' => 'required|string|in:income,expense',
+            'amount' => 'required|numeric|min:0.01',
             'note' => 'string|nullable',
-            'day_of_month' => 'required|integer',
+            'day_of_month' => 'required|integer|min:1|max:28',
             'start_month' => 'required|date',
-            'end_month' => 'required|date',
-            'is_active' => 'required|boolean|default:true',
+            'end_month' => 'nullable|date',
+            'is_active' => 'required|boolean',
         ]);
+
+        $start_month = Carbon::createFromFormat('Y-m', $validated['start_month'])->toDateString();
+        $end_month = $validated['end_month'] ? (Carbon::createFromFormat('Y-m', $validated['end_month'])->toDateString()) : null;
 
         $account = Account::where('id', $validated['account_id'])->where('user_id', $user->id)->exists();
 
-        $category = Category::where('id', $validated['category_id'])->where('user_id', $user->id)->exists();
+        $category = Category::where('id', $validated['category_id'])->where(function ($q) use ($user) {
+            $q->where('user_id', $user->id)->orWhereNull('user_id')->orWhere('is_default', true);
+        })->first();
 
-        if ($validated['user_id'] !== $user->id) {
-            return response()->json([
-                "success" => false,
-                "message" => "You don't have permission for this request",
-            ], 403);
-        }
 
         if (!$account) {
             return response()->json([
@@ -76,9 +74,9 @@ class RecurringController extends Controller
             'amount' => $validated['amount'],
             'note' => $validated['note'],
             'day_of_month' => $validated['day_of_month'],
-            'start_month' => $validated['start_month'],
-            'end_month' => $validated['end_month'],
-            'is_active' => $validated ?? 'true',
+            'start_month' => $start_month,
+            'end_month' => $end_month,
+            'is_active' => $validated['is_active'] ?? 'true',
         ]);
 
         return response()->json([
@@ -92,10 +90,10 @@ class RecurringController extends Controller
     {
         $user = auth('sanctum')->user();
 
-        if ($user->id !== $recurringTemplate->id) {
+        if ($recurringTemplate->user_id !== $user->id) {
             return response()->json([
                 "success" => false,
-                "message" => "Template doesn't belongs to you"
+                "message" => "Template doesn't belongs to you",
             ], 403);
         }
 
@@ -114,17 +112,19 @@ class RecurringController extends Controller
             'account_id' => 'required|exists:accounts,id',
             'category_id' => 'required|exists:categories,id',
             'type' => 'required|string',
-            'amount' => 'required|decimal:12,2',
+            'amount' => 'required|numeric|min:0.01',
             'note' => 'string|nullable',
             'day_of_month' => 'required|integer',
             'start_month' => 'required|date',
             'end_month' => 'date|nullable',
-            'is_active' => 'boolean|default:true',
+            'is_active' => 'boolean',
         ]);
 
         $account = Account::where('id', $validated['account_id'])->where('user_id', $user->id)->exists();
 
-        $category = Category::where('id', $validated['category_id'])->where('user_id', $user->id)->exists();
+        $category = Category::where('id', $validated['category_id'])->where(function ($q) use ($user) {
+            $q->where('user_id', $user->id)->orWhereNull('user_id')->orWhere('is_default', 'true');
+        })->first();
 
         if (!$account) {
             return response()->json([
@@ -173,7 +173,7 @@ class RecurringController extends Controller
 
         $user = auth('sanctum')->user();
 
-        $month = $request->querry('month', now()->format('Y-m'));
+        $month = $request->query('month', now()->format('Y-m'));
 
         $monthStart = Carbon::createFromFormat('Y-m', $month)->startOfMonth()->toDateString();
 
@@ -193,7 +193,7 @@ class RecurringController extends Controller
         ]);
     }
 
-    public function confirm(RecurringTemplate $recurringTemplate)
+    public function confirm(Request $request, RecurringTemplate $recurringTemplate)
     {
         $user = auth('sanctum')->user();
 
@@ -204,24 +204,36 @@ class RecurringController extends Controller
             ], 403);
         }
 
+        $month = $request->input('month', now()->format('Y-m'));
+        $monthStart = Carbon::createFromFormat('Y-m', $month)->startOfMonth()->toDateString();
+
+        $exists = RecurringRun::where('recurring_template_id', $recurringTemplate->id)->whereDate('month_start', $monthStart)->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Already confirmed or skipped for this month',
+            ], 422);
+        }
+
         DB::beginTransaction();
 
         try {
 
             $transaction = Transaction::create([
-                'user_id' => $recurringTemplate->user_id,
+                'user_id' => $user->id,
                 'account_id' => $recurringTemplate->account_id,
                 'category_id' => $recurringTemplate->category_id,
                 'type' => $recurringTemplate->type,
-                'amount' => $recurringTemplate->amount,
-                'note' => $recurringTemplate->note ?? null,
-                'transaction_date' => Carbon::now()->format('Y-m-d')->toDateString(),
+                'amount' => $request->input('amount', $recurringTemplate->amount),
+                'note' => $request->input('note', $recurringTemplate->note),
+                'transaction_date' => $request->input('transaction_date', now()->toDateString()),
             ]);
 
             $run = RecurringRun::create([
                 'recurring_template_id' => $recurringTemplate->id,
                 'user_id' => $recurringTemplate->user_id,
-                'month_start' => $recurringTemplate->start_month,
+                'month_start' => $monthStart,
                 'status' => 'confirmed',
                 'transaction_id' => $transaction->id,
 
@@ -232,7 +244,7 @@ class RecurringController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "recurring transaction added successfully",
-                'data' => [$transaction, $run],
+                'data' => ["transaction" => $transaction, 'run' => $run],
             ], 201);
         } catch (\Exception $e) {
 
@@ -245,7 +257,7 @@ class RecurringController extends Controller
         }
     }
 
-    public function skip(RecurringTemplate $recurringTemplate)
+    public function skip(Request $request, RecurringTemplate $recurringTemplate)
     {
         $user = auth('sanctum')->user();
 
@@ -256,17 +268,29 @@ class RecurringController extends Controller
             ], 403);
         }
 
+        $month = $request->input('month', now()->format('Y-m'));
+        $monthStart = Carbon::createFromFormat('Y-m', $month)->startOfMonth()->toDateString();
+
+        $exists = RecurringRun::where('recurring_template_id', $recurringTemplate->id)->whereDate('month_start', $monthStart)->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Already confirmed or skipped for this month',
+            ], 422);
+        }
+
         $run = RecurringRun::create([
             'recurring_template_id' => $recurringTemplate->id,
             'user_id' => $recurringTemplate->user_id,
-            'month_start' => $recurringTemplate->start_month,
+            'month_start' => $monthStart,
             'status' => 'skipped',
             'transaction_id' => null,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => "recurring transaction added successfully",
+            'message' => "recurring transaction skipped successfully",
             'data' => $run,
         ], 201);
     }

@@ -30,8 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get("/dailyspend", [DailySpendController::class, 'index']);
     Route::get("/daily-summary", [DailySpendController::class, 'summary']);
-    Route::apiResource("/recurring", RecurringController::class);
+    Route::apiResource("/recurring", RecurringController::class)->parameters(['recurring' => "recurringTemplate"]);
     Route::get("/recurring-due", [RecurringController::class, 'due']);
-    Route::post("/recurring/{recurring}/confirm", [RecurringController::class, 'confirm']);
-    Route::post("/recurring/{recurring}/skip", [RecurringController::class, 'skip']);
+    Route::post("/recurring/{recurringTemplate}/confirm", [RecurringController::class, 'confirm']);
+    Route::post("/recurring/{recurringTemplate}/skip", [RecurringController::class, 'skip']);
 });
