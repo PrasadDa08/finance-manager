@@ -42,8 +42,8 @@ class RecurringController extends Controller
             'is_active' => 'required|boolean',
         ]);
 
-        $start_month = Carbon::createFromFormat('Y-m', $validated['start_month'])->toDateString();
-        $end_month = $validated['end_month'] ? (Carbon::createFromFormat('Y-m', $validated['end_month'])->toDateString()) : null;
+        $start_month = Carbon::parse($validated['start_month'])->startOfMonth()->toDateString();
+        $end_month = $validated['end_month'] ? (Carbon::parse($validated['end_month'])->endOfMonth()->toDateString()) : null;
 
         $account = Account::where('id', $validated['account_id'])->where('user_id', $user->id)->exists();
 
@@ -139,6 +139,10 @@ class RecurringController extends Controller
                 'message' => "Category doesn't belongs to you",
             ]);
         }
+
+        $validated['start_month'] = Carbon::parse($validated['start_month'])->startOfMonth()->toDateString();
+
+        $validated['end_month'] = $validated['end_month'] ? Carbon::parse($validated['end_month'])->endOfMonth()->toDateString() : null;
 
         $recurringTemplate->update($validated);
 
