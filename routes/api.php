@@ -8,6 +8,7 @@ use App\Http\Controllers\DailySpendController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\RecurringController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,4 +35,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get("/recurring-due", [RecurringController::class, 'due']);
     Route::post("/recurring/{recurringTemplate}/confirm", [RecurringController::class, 'confirm']);
     Route::post("/recurring/{recurringTemplate}/skip", [RecurringController::class, 'skip']);
+    Route::get("/reports", [ReportController::class, 'index']);
 });
