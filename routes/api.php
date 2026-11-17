@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DailySpendController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecurringController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
@@ -36,4 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post("/recurring/{recurringTemplate}/confirm", [RecurringController::class, 'confirm']);
     Route::post("/recurring/{recurringTemplate}/skip", [RecurringController::class, 'skip']);
     Route::get("/reports", [ReportController::class, 'index']);
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
 });
