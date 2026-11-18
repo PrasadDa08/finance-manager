@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'phone'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -52,15 +52,18 @@ class User extends Authenticatable
         return $this->hasMany(Feedback::class);
     }
 
-    public function budgets(){
+    public function budgets()
+    {
         return $this->hasMany(Budget::class);
     }
 
-    public function recurringTemplates(){
+    public function recurringTemplates()
+    {
         return $this->hasMany(RecurringTemplate::class);
     }
 
-    public function runs(){
+    public function runs()
+    {
         return $this->hasMany(RecurringRun::class);
     }
 }
