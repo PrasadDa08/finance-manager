@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DailySpendController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecurringController;
 use App\Http\Controllers\ReportController;
@@ -19,6 +20,9 @@ Route::post("/register", [AuthController::class, 'register']);
 Route::post("/login", [AuthController::class, 'login']);
 Route::post('/register/request-otp', [AuthController::class, 'requestOtp']);
 Route::post('/register/verify-otp', [AuthController::class, 'verifyOtp']);
+
+Route::post('/forgot-password', [PasswordResetController::class, 'forgot']);
+Route::post('/reset-password', [PasswordResetController::class, 'reset']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post("/logout", [AuthController::class, 'logout']);
